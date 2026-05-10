@@ -1,0 +1,170 @@
+# vote
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>中华民族共同体研究会第十届理事选举投票</title>
+<style>
+  body { font-family: "SimSun", serif; background: #f0f4e8; padding: 20px; }
+  .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
+  h2, h3 { text-align: center; }
+  .rules { background: #f0f4e8; padding: 15px; border-radius: 6px; margin-bottom: 20px; line-height: 2; }
+  .vote-options { display: flex; gap: 20px; justify-content: center; margin: 20px 0; }
+  .vote-options label { font-size: 18px; cursor: pointer; }
+  
+  /* 不同意区域，默认隐藏 */
+  #disagree-section { display: none; margin-top: 20px; border: 1px solid #e74c3c; border-radius: 6px; padding: 15px; }
+  #disagree-section h4 { color: #e74c3c; margin-bottom: 10px; }
+  
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid #ccc; padding: 8px 12px; text-align: center; }
+  th { background: #e8f0e0; }
+  tr:nth-child(even) { background: #f9f9f9; }
+  tr:hover { background: #fff3f3; }
+  
+  /* 勾选行高亮 */
+  tr.checked-row { background: #ffe0e0 !important; }
+  
+  .submit-btn { display: block; width: 200px; margin: 30px auto 0; padding: 12px; background: #2e7d32; color: #fff; border: none; border-radius: 6px; font-size: 16px; cursor: pointer; }
+  .submit-btn:hover { background: #1b5e20; }
+  
+  .counter { color: #e74c3c; font-weight: bold; text-align: center; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h2>中华民族共同体研究会</h2>
+  <h3>第十届理事选举投票</h3>
+  <p style="text-align:center; color:#666;">（候选 184 名，应选 184 名）</p>
+
+  <div class="rules">
+    <strong>【投票规则】</strong><br>
+    如赞成全部候选人名单，请选择"<b>同意</b>"；<br>
+    如反对候选人名单，请选择"<b>不同意</b>"，并勾选不同意的人选姓名；<br>
+    如弃权，请选择"<b>弃权</b>"。
+  </div>
+
+  <!-- 第一步：三选一 -->
+  <div class="vote-options">
+    <label>
+      <input type="radio" name="vote" value="agree" onchange="handleVoteChange(this)"> 
+      ✅ 同意
+    </label>
+    <label>
+      <input type="radio" name="vote" value="disagree" onchange="handleVoteChange(this)"> 
+      ❌ 不同意
+    </label>
+    <label>
+      <input type="radio" name="vote" value="abstain" onchange="handleVoteChange(this)"> 
+      ⭕ 弃权
+    </label>
+  </div>
+
+  <!-- 第二步：不同意时展开候选人列表 -->
+  <div id="disagree-section">
+    <h4>⚠️ 请勾选您不同意的候选人（至少勾选1人）</h4>
+    <p class="counter">已勾选：<span id="checked-count">0</span> 人</p>
+    <table id="candidate-table">
+      <thead>
+        <tr>
+          <th>不同意</th>
+          <th>序号</th>
+          <th>姓名</th>
+          <th>性别</th>
+          <th>工作单位</th>
+          <th>职务/职称</th>
+        </tr>
+      </thead>
+      <tbody id="candidate-body">
+        <!-- 由JS动态生成 -->
+      </tbody>
+    </table>
+  </div>
+
+  <button class="submit-btn" onclick="submitVote()">提 交 投 票</button>
+</div>
+
+<script>
+// ========== 候选人数据（示例，替换为真实数据）==========
+const candidates = [
+  { id: 1, name: "张三", gender: "男", unit: "中央民族大学", title: "教授" },
+  { id: 2, name: "李四", gender: "女", unit: "北京大学", title: "研究员" },
+  { id: 3, name: "王五", gender: "男", unit: "中国社会科学院", title: "院长" },
+  // ... 共184名，此处省略，实际替换完整数据
+];
+
+// 动态生成候选人表格
+const tbody = document.getElementById('candidate-body');
+candidates.forEach(c => {
+  const tr = document.createElement('tr');
+  tr.id = `row-${c.id}`;
+  tr.innerHTML = `
+    <td><input type="checkbox" value="${c.id}" onchange="updateCount(this, ${c.id})"></td>
+    <td>${c.id}</td>
+    <td>${c.name}</td>
+    <td>${c.gender}</td>
+    <td>${c.unit}</td>
+    <td>${c.title}</td>
+  `;
+  tbody.appendChild(tr);
+});
+
+// 切换投票选项
+function handleVoteChange(radio) {
+  const section = document.getElementById('disagree-section');
+  if (radio.value === 'disagree') {
+    section.style.display = 'block';
+  } else {
+    section.style.display = 'none';
+    // 清空已勾选
+    document.querySelectorAll('#candidate-body input[type=checkbox]').forEach(cb => {
+      cb.checked = false;
+      document.getElementById(`row-${cb.value}`).classList.remove('checked-row');
+    });
+    document.getElementById('checked-count').textContent = '0';
+  }
+}
+
+// 更新勾选计数 & 高亮行
+function updateCount(checkbox, id) {
+  const row = document.getElementById(`row-${id}`);
+  if (checkbox.checked) {
+    row.classList.add('checked-row');
+  } else {
+    row.classList.remove('checked-row');
+  }
+  const count = document.querySelectorAll('#candidate-body input[type=checkbox]:checked').length;
+  document.getElementById('checked-count').textContent = count;
+}
+
+// 提交逻辑
+function submitVote() {
+  const selected = document.querySelector('input[name="vote"]:checked');
+  if (!selected) {
+    alert('请先选择投票选项（同意 / 不同意 / 弃权）');
+    return;
+  }
+
+  if (selected.value === 'disagree') {
+    const disagreed = [...document.querySelectorAll('#candidate-body input[type=checkbox]:checked')]
+                        .map(cb => cb.value);
+    if (disagreed.length === 0) {
+      alert('您选择了"不同意"，请至少勾选一位不同意的候选人。');
+      return;
+    }
+    const names = disagreed.map(id => candidates.find(c => c.id == id)?.name).join('、');
+    if (confirm(`您确认对以下 ${disagreed.length} 人投反对票：\n${names}\n\n确认提交？`)) {
+      // 此处调用后端接口提交数据
+      alert('投票成功！感谢您的参与。');
+    }
+  } else {
+    const label = selected.value === 'agree' ? '同意全部候选人' : '弃权';
+    if (confirm(`您选择：${label}\n\n确认提交？`)) {
+      alert('投票成功！感谢您的参与。');
+    }
+  }
+}
+</script>
+</body>
+</html>
